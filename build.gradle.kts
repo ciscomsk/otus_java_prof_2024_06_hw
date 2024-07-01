@@ -3,8 +3,8 @@ subprojects {
         mavenCentral()
     }
 
-    plugins.apply(JavaPlugin::class.java)
+    pluginManager.apply("java")
 
-    group = "com.example"
+    group = "ru.otus"
     version = "1.0-SNAPSHOT"
 }
