@@ -1,0 +1,11 @@
+[versions]
+guava = "33.2.1-jre"
+shadow = "8.1.1"
+
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+
+
+[libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }

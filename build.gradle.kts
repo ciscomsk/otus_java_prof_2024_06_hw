@@ -1,19 +1,20 @@
-plugins {
-    id("java")
-}
+subprojects {
+    repositories {
+        mavenCentral()
+    }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+    pluginManager.apply("java")
 
-repositories {
-    mavenCentral()
-}
+    extensions.configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 
-dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-}
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf("-Xlint:all"))
+    }
 
-tasks.test {
-    useJUnitPlatform()
+    group = "ru.otus"
+    version = "1.0-SNAPSHOT"
 }
