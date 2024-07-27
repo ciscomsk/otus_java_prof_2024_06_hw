@@ -1,10 +1,12 @@
 package homework;
 
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class CustomerService {
-    private final TreeMap<Customer, String> customerData;
+    // лучше писать интерфейс TreeMap -> NavigableMap
+    private final NavigableMap<Customer, String> customerData;
 
     public CustomerService() {
         this.customerData = new TreeMap<>();
