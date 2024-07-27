@@ -15,6 +15,10 @@ subprojects {
         options.compilerArgs.addAll(listOf("-Xlint:all"))
     }
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
     group = "ru.otus"
     version = "1.0-SNAPSHOT"
 }
