@@ -3,70 +3,49 @@ package homework.runner;
 import homework.runner.annotations.After;
 import homework.runner.annotations.Before;
 import homework.runner.annotations.Test;
-import homework.runner.exceptions.AssertionException;
+import homework.runner.model.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class TestRunner {
     private static final Logger logger = LoggerFactory.getLogger(TestRunner.class);
 
     private final String testClass;
-    private int total;
-    private int passed;
-    private int failed;
-    private final List<Method> beforeMethods;
-    private final List<Method> testMethods;
-    private final List<Method> afterMethods;
 
     public TestRunner(String testClass) {
         this.testClass = testClass;
-        total = 0;
-        passed = 0;
-        failed = 0;
-        beforeMethods = new ArrayList<>();
-        testMethods = new ArrayList<>();
-        afterMethods = new ArrayList<>();
-    }
-
-    public static void assertEquals(Object expected, Object actual) {
-        boolean objectsAreEqual = Objects.equals(expected, actual);
-        if (!objectsAreEqual) {
-            throw new AssertionException("expected: " + expected + ", actual: " + actual);
-        }
     }
 
     public void runTests() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?> testClass = Class.forName(this.testClass);
-        inspectClass(testClass);
+        TestInfo testInfo = inspectClass(testClass);
 
-        for (Method test : testMethods) {
+        for (Method test : testInfo.getTestMethods()) {
             Object instance = testClass.getDeclaredConstructor().newInstance();
             try {
-                invokeMethods(beforeMethods, instance);
+                invokeMethods(testInfo.getBeforeMethods(), instance);
                 test.invoke(instance);
-                invokeMethods(afterMethods, instance);
-                total++;
-                passed++;
+                testInfo.setPassed(testInfo.getPassed() + 1);
             } catch (Exception ex) {
-                invokeMethods(afterMethods, instance);
-                total++;
-                failed++;
+                testInfo.setFailed(testInfo.getFailed() + 1);
                 logger.warn(ex.getCause().getMessage());
+            } finally {
+                invokeMethods(testInfo.getAfterMethods(), instance);
             }
         }
 
-        logResult();
+        logResult(testInfo);
     }
 
-    private void inspectClass(Class<?> testClass) throws NoSuchMethodException {
+    private TestInfo inspectClass(Class<?> testClass) throws NoSuchMethodException {
         Method[] methods = testClass.getDeclaredMethods();
+        TestInfo testInfo = new TestInfo();
+
         for (Method method : methods) {
             if (Modifier.isStatic(method.getModifiers())) {
                 continue;
@@ -74,15 +53,17 @@ public class TestRunner {
 
             Method currentMethod = testClass.getMethod(method.getName());
             if (currentMethod.isAnnotationPresent(Before.class)) {
-                beforeMethods.add(currentMethod);
+                testInfo.getBeforeMethods().add(currentMethod);
             }
             if (currentMethod.isAnnotationPresent(Test.class)) {
-                testMethods.add(currentMethod);
+                testInfo.getTestMethods().add(currentMethod);
             }
             if (currentMethod.isAnnotationPresent(After.class)) {
-                afterMethods.add(currentMethod);
+                testInfo.getAfterMethods().add(currentMethod);
             }
         }
+
+        return testInfo;
     }
 
     private void invokeMethods(List<Method> methods, Object instance) throws InvocationTargetException, IllegalAccessException {
@@ -91,9 +72,9 @@ public class TestRunner {
         }
     }
 
-    private void logResult() {
-        logger.info("total: {}", total);
-        logger.info("passed: {}", passed);
-        logger.info("failed: {}", failed);
+    private void logResult(TestInfo statistics) {
+        logger.info("total: {}", statistics.getFailed() + statistics.getPassed());
+        logger.info("passed: {}", statistics.getPassed());
+        logger.info("failed: {}", statistics.getFailed());
     }
 }

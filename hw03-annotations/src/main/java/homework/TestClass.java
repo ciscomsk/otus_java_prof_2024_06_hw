@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static homework.runner.TestRunner.assertEquals;
-
 public class TestClass {
     private static final Logger logger = LoggerFactory.getLogger(TestClass.class);
 
@@ -37,13 +35,21 @@ public class TestClass {
     @Test
     public void successCase() {
         logger.info("successCase");
-        assertEquals(1, 1);
+        int actual = 1;
+        int expected = 1;
+        if (actual != expected) {
+            throw new AssertionError("actual: " + actual + ", expected: " + expected);
+        }
     }
 
     @Test
     public void failedCase() {
         logger.info("failedCase");
-        assertEquals(1, 2);
+        int actual = 1;
+        int expected = 2;
+        if (actual != expected) {
+            throw new AssertionError("actual: " + actual + ", expected: " + expected);
+        }
     }
 
     @Test
